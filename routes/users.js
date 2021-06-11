@@ -3,13 +3,14 @@ const bodyParser = require('body-parser');
 var User = require('../models/user');
 var passport = require('passport');
 var authenticate = require('../authenticate');
+const cors = require('./cors');
 
 var router = express.Router();
 router.use(bodyParser.json());
 
 /* GET users listing. */
 router.route('/')
-.get(authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
+.get(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, function(req, res, next) {
   User.find({}, (err, users) => {
     if (err) {
       return next(err);
@@ -21,7 +22,7 @@ router.route('/')
   })
 });
 
-router.post('/signup',(req,res,next) => {
+router.post('/signup', cors.corsWithOptions, (req,res,next) => {
   User.register(new User({username: req.body.username}),req.body.password, (err, user) => {
     if (err){
       res.statusCode = 500;
@@ -50,7 +51,7 @@ router.post('/signup',(req,res,next) => {
   });
 });
 
-router.post('/login', passport.authenticate('local'), (req,res,next) => {
+router.post('/login', cors.corsWithOptions, passport.authenticate('local'), (req,res,next) => {
   var token = authenticate.getToken({_id : req.user._id});
   res.statusCode = 200;
     res.setHeader('Content-Type','application/json');
